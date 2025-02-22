@@ -2,6 +2,9 @@
 
 FxChartAI Algorithm Trading EA is an open-source Expert Advisor (EA) for MetaTrader 5, designed to trade using signals received from FxChartAI. The EA processes CSV files containing trading signals and implements a structured trading checklist for making market decisions. This project is free to use for both personal and commercial purposes, and we encourage contributions to help improve the algorithm toward achieving 100% accurate trade decisions.
 
+![openea-all-positions_jpg](https://github.com/user-attachments/assets/87e55224-ce66-4869-a4f2-e658e7052973)
+
+
 ## Features
 
 - **CSV Data Handling**  
