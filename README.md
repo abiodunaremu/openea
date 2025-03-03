@@ -1,24 +1,32 @@
 # FxChartAI Algorithm Trading EA
 
-FxChartAI Algorithm Trading EA is an open-source Expert Advisor (EA) for MetaTrader 5, designed to trade using signals received from FxChartAI. The EA processes CSV files containing trading signals and implements a structured trading checklist for making market decisions. This project is free to use for both personal and commercial purposes, and we encourage contributions to help improve the algorithm toward achieving 100% accurate trade decisions.
+FxChartAI Algorithm Trading EA is an open-source Expert Advisor (EA) for MetaTrader 5, designed for algorithmic trading using signals received from FxChartAI. The EA processes market signals from FxChartAI and implements a structured trading checklist for making trading decisions. It now integrates live signal data via API calls (with fallback CSV test mode) and includes advanced trend confirmation, candle tail/trendline analysis, dynamic order management, and robust error handling. This project is free to use for both personal and commercial purposes, and we encourage contributions to help improve the algorithm toward achieving 100% accurate trade decisions.
 
 ![openea-all-positions_jpg](https://github.com/user-attachments/assets/87e55224-ce66-4869-a4f2-e658e7052973)
 
 
 ## Features
 
-- **CSV Data Handling**  
-  - Reads and processes two CSV files: `datasets/signal_dataset_gbpusd_m10.csv` and `datasets/signal_dataset_gbpusd_h1.csv`
-  - CSV headers include:
-    - `Datetime` (timestamp of the signal)
-    - `Position` (0 = Buy, 1 = Sell, 2 = None)
-    - `Signal` (0 = High Trend, 1 = Low Trend, 2 = No Trend)
-  - The EA waits 3 minutes after a new candle is formed and confirms that the CSV has been updated before proceeding.
+- **API & CSV Signal Integration:**  
+  - Retrieves live signals from FxChartAI API via GET requests.
+  - Fallback support for CSV-based signals in test mode.
+  - Signals include `position` (0 = Buy, 1 = Sell, 2 = None), and `signal` (e.g., weight).
+
+- **Multi-Timeframe Analysis:**  
+  - Processes both M10 and H1 data.
+  - Confirms trends using consecutive signal checks.
+  - Uses advanced candle tail and trendline analysis for trade confirmation.
+
+- **Dynamic Order Management:**  
+  - Places pending orders (Buy/Sell Stops) or executes market orders based on signal analysis.
+  - Manages open orders and trend reversals with robust error handling.
+
+- **Configurable Parameters:**  
+  - Lot sizes, Stop Loss, Take Profit, confidence levels, and mode selection (test vs. live) are fully configurable.
 
 - **Trading Logic**  
   - **Trend Confirmation:**  
-    - For M10: Checks for at least three consecutive signals of ‘0’ (High Trend) and/or ‘1’ (Low Trend).  
-    - For H1: Checks for at least three occurrences of the same position’s signal (0 or 1) without interruption.
+    - Checks for at least `ConfidenceLevel` consecutive signals of ‘0’ (High Trend) and/or ‘1’ (Low Trend).
   - **Candle Tail & Trendline Analysis:**  
     - Confirms trade entries using candle tail and trendline analysis.
     - Implements logic for calculating candle tails and trendlines to support buy/sell decisions.
@@ -29,7 +37,7 @@ FxChartAI Algorithm Trading EA is an open-source Expert Advisor (EA) for MetaTra
     - M10 signals are treated as short-term trades (tight stop loss & take profit).  
     - H1 signals are treated as long-term trades (flexible stop loss & take profit).
   - **Trend Reversal Management:**  
-    - Exits trades if the CSV signals no longer support the current position and an opposing trendline is detected.
+    - Exits trades if the signals no longer support the current position and an opposing trendline is detected.
     - Adjusts pending orders if the trend unexpectedly continues.
   - **Take Profit & Stop Loss Strategy:**  
     - For Buy trades: Sets take profit at the highest high of the previous 200 candles.
@@ -46,28 +54,90 @@ FxChartAI Algorithm Trading EA is an open-source Expert Advisor (EA) for MetaTra
 - **fxchartai_openea.mq5**  
   The main EA source code implementing the trading logic based on FxChartAI signals.
 
-- **datasets/signal_dataset_gbpusd_m10.csv**  
-  Example CSV dataset for GBP/USD signals on the M10 timeframe.
+- **datasets/Feb_2025/signal_dataset_gbpusd_m10.csv**  
+  February 2025 CSV dataset for GBP/USD FxChartAI signals on the M10 timeframe.
 
-- **datasets/signal_dataset_gbpusd_h1.csv**  
-  Example CSV dataset for GBP/USD signals on the H1 timeframe.
+- **datasets/Feb_2025/signal_dataset_gbpusd_h1.csv**  
+  February 2025 CSV dataset for GBP/USD FxChartAI signals on the H1 timeframe.
+
+- **include/JAson.mqh**  
+  Library used by EA to process live data.
+
+- **reports/v1_1/feb2025default/ReportTester-v1_gbpusd_feb2025.html**  
+  Example Strategy Tester report from running FxChartAI OpenEA with default parameters on the February 2025 signal dataset
 
 ## Getting Started
 
-1. **Installation:**
-   - Clone or download this repository.
-   - Place the `fxchartai_openea.mq5` file into your `MQL5/Experts` directory.
-   - Ensure the CSV files are located in the `datasets` folder relative to your MetaTrader 5 data directory.
+### No Code Setup Instructions
+These steps do not require editing code and are for setting up your environment to run the EA.
 
-2. **Compilation:**
-   - Open MetaEditor.
-   - Open `fxchartai_openea.mq5` and compile the EA.
-   - Resolve any dependencies if prompted.
+1. **Download Prebuilt EA**
+   - Download the latest `.ex5` file from the [Releases](https://github.com/abiodunaremu/openea/releases) page.
 
-3. **Usage:**
+2. **Download dependencies:**
+   - Visit [https://github.com/abiodunaremu/openea](https://github.com/abiodunaremu/openea) and download the repository as a ZIP file.
+
+3. **File Placement:**
+   - Open MetaTrader 5 → File → Open Data Folder.
+   - Place `fxchartai_openea.ex5` in your MetaTrader 5 `Experts` folder.  
+     *(Typically located at: `MQL5/Experts` in your MetaTrader data directory.)*
+   - Place the `datasets` folder (with test CSV files) in the data directory (usually located at `Tester/.../MQL5/Files`) as required (this is used only if running in test mode).
+
+4. **Include Dependencies:**
+   - Ensure that the JAson.mqh file (downloaded per [JAson.mqh article](https://www.mql5.com/en/articles/14108)) is placed in your `MQL5\Include` folder.
+
+### Code Setup Instructions
+For users familiar with MetaEditor or who wish to compile and customize the EA code.
+
+1. **Download or Clone the Repository:**
+   - Visit [https://github.com/abiodunaremu/openea](https://github.com/abiodunaremu/openea) and download the repository as a ZIP file or clone it using Git.
+
+2. **Open MetaEditor:**
+   - Launch MetaEditor from your MetaTrader 5 platform.
+
+3. **File Placement:**
+   - Place `fxchartai_openea.mq5` in your MetaTrader 5 `Experts` folder.  
+     *(Typically located at: `MQL5/Experts` in your MetaTrader data directory.)*
+   - Place the `datasets` folder (with sample CSV files) in the data directory (usually located at `Tester/.../MQL5/Files`) as required (this is used only if running in test mode).
+
+4. **Include Dependencies:**
+   - Ensure that the JAson.mqh file (downloaded per [JAson.mqh article](https://www.mql5.com/en/articles/14108)) is placed in your `MQL5\Include` folder.
+
+5. **Open the EA File:**
+   - In MetaEditor, navigate to `File -> Open` and select `fxchartai_openea.mq5` from the Experts folder.
+
+6. **Review and Customize Inputs:**
+   - The EA has configurable input parameters at the top of the code (e.g., `LotSize`, `StopLossPips`, `TakeProfitPips`, `confidence`, `MaxDataSize`, `mode`, and `maxAttempts`).  
+   - Adjust these parameters and the code base to suit your trading strategy.
+
+7. **Compile the EA:**
+   - Click the `Compile` button in MetaEditor. Ensure that there are no errors.
+   - If errors occur, verify that JAson.mqh is correctly placed and that any dependencies are resolved.
+
+### Usage
+
+1. **Enable WebRequest (Live Mode Only)**
+   - In MetaTrader 5, go to Tools → Options → Expert Advisors.
+   - Check "Allow WebRequest for listed URL".
+   - Add the URL: https://chartapi.fxchartai.com to the list.
+   - Run in Strategy Tester (Test Mode)
+    
+2. **Backtesting**
+   - Open the Strategy Tester in MetaTrader 5.
+   - Select the FxChartAI_OpenEA EA from the Experts dropdown.
+   - Set the mode parameter to 0 (test mode is recommended) to use CSV-based signals or 1 to pull signal data using API.
+   - Ensure the CSV files (test mode) are available in the correct `MQL5/Files` directory. The directory is usually clean up by Strategy Tester when the EA is updated.
+   - Configure your testing parameters (date range, initial deposit, etc.).
+   - Click "Start" to run the EA in the Strategy Tester.
+
+3. **Real-time trading**
+   - In MetaTrader 5, open a chart for GBP/USD.
+   - Drag the FxChartAI OpenEA from the Navigator window onto the chart.
+   - Configure the inputs in the EA’s settings dialog if necessary.
+   - Enable automated trading in MetaTrader 5.
    - Attach the EA to a chart on either the M10 or H1 timeframe.
-   - Configure input parameters (e.g., lot size, stop loss, take profit, confidence level).
-   - The EA will read the CSV files, process the signals, and execute trades based on the implemented logic.
+   - Configure input parameters (e.g., lot size, stop loss, take profit, confidence level). Set mode = 1 to pull signal data through API.
+   - The EA will pull data from FxChartAI using API, process the signals, and execute trades based on the implemented logic.
    - Monitor the Experts log for messages regarding trade decisions and error handling.
 
 ## Contributing
@@ -76,7 +146,7 @@ We welcome contributions from the community to improve the FxChartAI Algorithm T
 
 - Fork this repository.
 - Create a feature branch and implement your changes.
-- Submit a pull request with detailed information about your changes.
+- Submit a pull request with detailed information about your changes. Test report with optimised input values can be submitted as changes to `reports/`.
 - Open issues for any bugs or feature requests.
 
 ## Disclaimer

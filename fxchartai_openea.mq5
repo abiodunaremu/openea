@@ -303,7 +303,7 @@ string BuildAPIRequestURL(ENUM_TIMEFRAMES tf, datetime time)
                           TimeToString(time, TIME_MINUTES);
 
    return StringFormat(
-             "http://chartapi.fxchartai.com/easignal?currencypair=%s&size=%d&tradedate=%s&timeframe=%s",
+             "https://chartapi.fxchartai.com/easignal?currencypair=%s&size=%d&tradedate=%s&timeframe=%s",
              _Symbol, MaxDataSize, formattedTime, timeframeStr
           );
   }
